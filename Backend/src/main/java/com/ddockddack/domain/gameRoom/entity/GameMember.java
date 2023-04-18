@@ -1,6 +1,7 @@
-package com.ddockddack.domain.gameRoom.repository;
+package com.ddockddack.domain.gameRoom.entity;
 
 import com.ddockddack.domain.member.entity.Member;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
@@ -8,13 +9,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.index.Indexed;
 
 @Getter
 @ToString
 @NoArgsConstructor
-public class GameMember {
+@RedisHash(value = "gameMember", timeToLive = 1800)
+public class GameMember{
 
+    @Id
     private String socketId;
+    @Indexed
+    private String pinNumber;
     private Member member;
     private String nickname;
     private Integer roundScore = 0;
@@ -24,8 +32,9 @@ public class GameMember {
     private List<byte[]> images = new ArrayList<>();
 
     @Builder
-    public GameMember(String socketId, Member member, String nickname, String clientIp) {
+    public GameMember(String socketId, String pinNumber, Member member, String nickname, String clientIp) {
         this.socketId = socketId;
+        this.pinNumber = pinNumber;
         this.member = member;
         this.nickname = nickname;
         this.clientIp = clientIp;

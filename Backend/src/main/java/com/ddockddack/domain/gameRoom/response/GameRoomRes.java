@@ -1,7 +1,7 @@
 package com.ddockddack.domain.gameRoom.response;
 
 import com.ddockddack.domain.game.response.GameImageRes;
-import com.ddockddack.domain.gameRoom.repository.GameRoom;
+import com.ddockddack.domain.gameRoom.entity.GameRoom;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,16 +36,15 @@ public class GameRoomRes {
         this.isHost = isHost;
     }
 
-    public static GameRoomRes of(GameRoom gameRoom) {
+    public static GameRoomRes of(GameRoom gameRoom, boolean isHost) {
         return GameRoomRes.builder()
                 .pinNumber(gameRoom.getPinNumber())
                 .gameId(gameRoom.getGameId())
                 .gameTitle(gameRoom.getGameTitle())
                 .gameDescription(gameRoom.getGameDescription())
                 .gameImages(gameRoom.getGameImages().stream()
-                        .map(i -> GameImageRes.of(i))
                         .collect(Collectors.toList()))
-                .isHost(gameRoom.getMembers().size() == 1 ? true : false)
+                .isHost(isHost)
                 .build();
     }
 }

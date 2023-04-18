@@ -1,6 +1,6 @@
 package com.ddockddack.domain.gameRoom.response;
 
-import com.ddockddack.domain.gameRoom.repository.GameMember;
+import com.ddockddack.domain.gameRoom.entity.GameMember;
 import lombok.*;
 
 @Setter
@@ -26,7 +26,7 @@ public class GameMemberRes {
         this.nickname = nickname;
     }
 
-    public static GameMemberRes from(GameMember gameMember, int round){
+    public static GameMemberRes of(GameMember gameMember, int round){
         return GameMemberRes.builder()
                 .socketId(gameMember.getSocketId())
                 .nickname(gameMember.getNickname())

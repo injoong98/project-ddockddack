@@ -79,12 +79,12 @@ public class TokenService {
             Jws<Claims> claims = Jwts.parser()
                 .setSigningKey(secretKey)
                 .parseClaimsJws(token);
-            log.info("claims {}", Jwts.parser()
-                .setSigningKey(secretKey)
-                .parseClaimsJws(token));
+//            log.info("claims {}", Jwts.parser()
+//                .setSigningKey(secretKey)
+//                .parseClaimsJws(token));
 //            log.info("token verify {}", redisTemplate.opsForValue().get(token));
 //            ValueOperations<String, String> logoutValueOperations = redisTemplate.opsForValue();
-
+//
 //            if (logoutValueOperations.get(token) != null) {
 //                log.info("로그아웃 된 토큰입니다.");
 //                return false;
@@ -100,8 +100,7 @@ public class TokenService {
 
     public Long getExpiration(String token) {
         try {
-            log.info("expiration {}",
-                Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody());
+                Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
             Date expiration = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody()
                 .getExpiration();
             Long now = new Date().getTime();
