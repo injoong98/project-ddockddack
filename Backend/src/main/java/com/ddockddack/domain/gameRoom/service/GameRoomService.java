@@ -44,6 +44,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -92,6 +93,7 @@ public class GameRoomService {
             .orElseThrow(() -> new NotFoundException(ErrorCode.GAME_NOT_FOUND));
 
         final String pinNumber = createPinNumber();
+
         Map<String, String> sessionPropertiesInfo = new HashMap<>();
 
         sessionPropertiesInfo.put("customSessionId", pinNumber);
@@ -109,7 +111,9 @@ public class GameRoomService {
             .gameImages(gameImages)
             .pinNumber(pinNumber)
             .build();
+
         gameRoomRedisRepository.save(gameRoom);
+
         return pinNumber;
 
     }
@@ -244,7 +248,9 @@ public class GameRoomService {
         byte[] byteGameImage = awsS3.getObject(param.get("gameImage"));
         byte[] byteImage = Base64.decodeBase64(param.get("memberGameImage"));
         int rawScore = ensembleModel.CalculateSimilarity(byteGameImage, byteImage);
+        System.out.println("aa");
         saveScore(pinNumber, sessionId, byteImage, rawScore);
+
     }
 
     /**
@@ -340,9 +346,9 @@ public class GameRoomService {
      * @param rawScore
      * @throws JsonProcessingException
      */
-    private void saveScore(String pinNumber, String socketId, byte[] byteImage, int rawScore)
+    private synchronized void saveScore(String pinNumber, String socketId, byte[] byteImage, int rawScore)
         throws JsonProcessingException {
-
+        
         final GameRoom gameRoom = gameRoomRedisRepository.findById(pinNumber).orElseThrow(() ->
             new NotFoundException(ErrorCode.GAME_ROOM_NOT_FOUND));
 
@@ -352,13 +358,11 @@ public class GameRoomService {
         gameMember.getImages().add(byteImage);
         gameMember.changeRoundScore(rawScore);
         gameRoom.increaseScoreCnt();
-
         gameMemberRedisRepository.save(gameMember);
-
+        System.out.println(gameRoom.getScoreCount());
         if (gameRoom.getScoreCount() == gameMembers.size()) {
             gameMembers = gameMemberRedisRepository.findByPinNumber(pinNumber);
             List<GameMemberRes> roundResultData = findRoundResult(gameMembers, gameRoom.getRound());
-
             int maxRoundScore = Collections.max(roundResultData,
                 Comparator.comparing(GameMemberRes::getRoundScore)).getRoundScore();
 
