@@ -27,4 +27,5 @@ public interface BestcutLikeRepository extends JpaRepository<BestcutLike, Long> 
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM BestcutLike l WHERE l.member.id = :id")
     void deleteByMemberId(@Param("id") Long memberId);
+
 }

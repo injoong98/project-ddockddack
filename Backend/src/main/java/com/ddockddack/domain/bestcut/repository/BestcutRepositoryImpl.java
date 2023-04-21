@@ -58,7 +58,8 @@ public class BestcutRepositoryImpl implements BestcutRepositorySupport {
                     bestcut.imageUrl.as("bestcutImgUrl"), bestcut.gameTitle,
                     bestcut.gameImageUrl, bestcut.gameImgDesc,
                     bestcut.member.id.as("memberId"),
-                    bestcut.createdAt.as("createdDate"), getLikeCnt(),
+                    bestcut.createdAt.as("createdDate"),
+                    bestcut.likeCount.as("popularity"),
                     getIsLiked(loginMemberId), bestcut.member.profile.as("profileImgUrl"),
                     bestcut.member.nickname))
                 .from(bestcut)
@@ -76,7 +77,8 @@ public class BestcutRepositoryImpl implements BestcutRepositorySupport {
                     bestcut.imageUrl.as("bestcutImgUrl"), bestcut.gameTitle,
                     bestcut.gameImageUrl, bestcut.gameImgDesc,
                     bestcut.member.id.as("memberId"),
-                    bestcut.createdAt.as("createdDate"), getLikeCnt(),
+                    bestcut.createdAt.as("createdDate"),
+                    bestcut.likeCount.as("popularity"),
                     getIsLiked(loginMemberId), member.profile.as("profileImgUrl"),
                     member.nickname)).from(bestcut).join(bestcut.member, member)
             .where(bestcut.id.eq(bestcutId))
@@ -115,7 +117,6 @@ public class BestcutRepositoryImpl implements BestcutRepositorySupport {
             .orderBy(reportedBestcut.id.desc())
             .fetch();
     }
-
 
     private Expression<Integer> getLikeCnt() {
         return ExpressionUtils.as(

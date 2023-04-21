@@ -7,6 +7,7 @@ import com.ddockddack.domain.bestcut.repository.BestcutRepository;
 import com.ddockddack.domain.bestcut.request.BestcutSaveReq;
 import com.ddockddack.domain.bestcut.response.BestcutRes;
 import com.ddockddack.domain.bestcut.response.ReportedBestcutRes;
+import com.ddockddack.domain.gameRoom.repository.GameMemberRedisRepository;
 import com.ddockddack.domain.member.entity.Member;
 import com.ddockddack.domain.member.entity.Role;
 import com.ddockddack.domain.member.repository.MemberRepository;
@@ -21,8 +22,10 @@ import com.ddockddack.global.error.exception.NotFoundException;
 import com.ddockddack.global.oauth.MemberDetail;
 import com.ddockddack.global.util.PageConditionReq;
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +37,7 @@ public class BestcutService {
     private final BestcutRepository bestcutRepository;
     private final BestcutLikeRepository bestcutLikeRepository;
     private final ReportedBestcutRepository reportedBestcutRepository;
+    private final GameMemberRedisRepository gameMemberRedisRepository;
     private final MemberRepository memberRepository;
     private final AwsS3 awsS3;
 
@@ -49,18 +53,16 @@ public class BestcutService {
 
         final Member member = memberRepository.getReferenceById(memberId);
 
-        String pinNumber = saveReq.getPinNumber();
         String socketId = saveReq.getSocketId();
 
-//        for (int idx = 0; idx < saveReq.getImages().size(); idx++) {
-//            int userImageIndex = saveReq.getImages().get(idx).getBestcutIndex();
-//            byte[] byteImage = gameRoomRepository.findByImageIndex(pinNumber, socketId,
-//                userImageIndex);
-//            String fileName = awsS3.InputStreamUpload(byteImage);
-//
-//            Bestcut bestcut = saveReq.toEntity(member, idx, fileName);
-//            bestcutRepository.save(bestcut);
-//        }
+        for (int idx = 0; idx < saveReq.getImages().size(); idx++) {
+            int userImageIndex = saveReq.getImages().get(idx).getBestcutIndex();
+            byte[] byteImage = gameMemberRedisRepository.findById(socketId).get().getImages().get(userImageIndex);
+            String fileName = awsS3.InputStreamUpload(byteImage);
+
+            Bestcut bestcut = saveReq.toEntity(member, idx, fileName);
+            bestcutRepository.save(bestcut);
+        }
     }
 
     /**
@@ -161,17 +163,19 @@ public class BestcutService {
             .bestcut(bestcut)
             .member(member)
             .build();
-
+        bestcut.increaseLikeCnt();
         bestcutLikeRepository.save(bestcutLike);
     }
 
     @Transactional
     public void removeBestcutLike(Long bestcutId, Long memberId) {
-
         BestcutLike bestcutLike = bestcutLikeRepository.findByMemberIdAndBestcutId(memberId,
                 bestcutId)
             .orElseThrow(() -> new NotFoundException(ErrorCode.BESTCUT_LIKE_NOT_FOUND));
-        bestcutLikeRepository.delete(bestcutLike);
+
+        bestcutRepository.minusByBestcutId(bestcutId);
+        bestcutLikeRepository.deleteById(bestcutLike.getId());
+
     }
 
     /**
@@ -183,6 +187,12 @@ public class BestcutService {
         // 존재하는 베스트 컷 인지 검증
         return bestcutRepository.findById(bestcutId).orElseThrow(() ->
             new NotFoundException(ErrorCode.GAME_NOT_FOUND));
+    }
+
+    @Scheduled(cron = "00 00 04 ? * *", zone = "Asia/Seoul")
+    @Transactional
+    public void syncLikeCount(){
+        bestcutRepository.syncLikeCount();
     }
 
 }
