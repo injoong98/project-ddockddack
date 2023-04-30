@@ -39,12 +39,11 @@
 
 <script setup>
 import { useStore } from "vuex";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { apiInstance } from "@/api/index";
 
 const store = useStore();
 const api = apiInstance();
-
 const currentModal = computed(() => store.state.commonStore.currentModal);
 
 const agreement = ref(false);
