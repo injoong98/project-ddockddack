@@ -13,7 +13,7 @@
         class="img"
         :src="IMAGE_PATH + '/' + currentModal.data.targetImage"
       />
-      <img class="img" :src="currentModal.data.userImage" />
+      <img class="img" id="myImage" :src="currentModal.data.userImage" />
     </div>
     <div class="title" style="margin-top: 40px; font-size: 25px">
       {{ currentModal.data.gameTitle }}
@@ -275,6 +275,7 @@ ul.join_box {
   overflow: hidden;
 }
 .img {
+  height: 100%;
   width: 50%;
 }
 
@@ -301,5 +302,8 @@ ul.join_box {
   font-size: 15px;
   left: 50%;
   top: 7px;
+}
+#myImage {
+  transform: scaleX(-1);
 }
 </style>
