@@ -3,9 +3,9 @@ package com.ddockddack.domain.bestcut.controller;
 import com.ddockddack.domain.bestcut.request.BestcutSaveReq;
 import com.ddockddack.domain.bestcut.response.BestcutRes;
 import com.ddockddack.domain.bestcut.service.BestcutService;
-import com.ddockddack.domain.member.response.MemberAccessRes;
 import com.ddockddack.domain.report.entity.ReportType;
-import com.ddockddack.global.util.PageConditionReq;
+import com.ddockddack.global.oauth.MemberDetail;
+import com.ddockddack.domain.multigame.request.paging.PageConditionReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -14,7 +14,7 @@ import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/bestcuts")
+@RequestMapping("/bestcuts")
 public class BestcutApiController {
 
     private final BestcutService bestcutService;
@@ -39,10 +39,8 @@ public class BestcutApiController {
         @ApiResponse(description = "필수 값 누락", responseCode = "400"),
     })
     public ResponseEntity bestcutSave(@RequestBody @Valid BestcutSaveReq saveReq,
-        Authentication authentication) {
-        Long memberId = ((MemberAccessRes) authentication.getPrincipal()).getId();
-
-        bestcutService.saveBestcut(memberId, saveReq);
+        @AuthenticationPrincipal MemberDetail memberDetail) {
+        bestcutService.saveBestcut(memberDetail.getId(), saveReq);
         return ResponseEntity.ok().build();
     }
 
@@ -55,9 +53,8 @@ public class BestcutApiController {
         @ApiResponse(description = "존재하지 않는 멤버", responseCode = "404"),
     })
     public ResponseEntity bestcutRemove(@PathVariable Long bestcutId,
-        Authentication authentication) {
-        Long memberId = ((MemberAccessRes) authentication.getPrincipal()).getId();
-        bestcutService.removeBestcut(bestcutId, memberId);
+        @AuthenticationPrincipal MemberDetail memberDetail) {
+        bestcutService.removeBestcut(bestcutId, memberDetail);
 
         return ResponseEntity.ok().build();
     }
@@ -70,10 +67,9 @@ public class BestcutApiController {
         @ApiResponse(description = "존재하지 않는 베스트컷", responseCode = "404"),
         @ApiResponse(description = "존재하지 않는 멤버", responseCode = "404"),
     })
-    public ResponseEntity bestcutLike(@PathVariable Long bestcutId, Authentication authentication) {
-
-        Long memberId = ((MemberAccessRes) authentication.getPrincipal()).getId();
-        bestcutService.saveBestcutLike(bestcutId, memberId);
+    public ResponseEntity bestcutLike(@PathVariable Long bestcutId,
+        @AuthenticationPrincipal MemberDetail memberDetail) {
+        bestcutService.saveBestcutLike(bestcutId, memberDetail.getId());
 
         return ResponseEntity.ok().build();
     }
@@ -86,10 +82,9 @@ public class BestcutApiController {
         @ApiResponse(description = "존재하지 않는 멤버", responseCode = "404"),
     })
     public ResponseEntity bestcutDislike(@PathVariable Long bestcutId,
-        Authentication authentication) {
+        @AuthenticationPrincipal MemberDetail memberDetail) {
 
-        Long memberId = ((MemberAccessRes) authentication.getPrincipal()).getId();
-        bestcutService.removeBestcutLike(bestcutId, memberId);
+        bestcutService.removeBestcutLike(bestcutId, memberDetail.getId());
 
         return ResponseEntity.ok().build();
     }
@@ -104,10 +99,10 @@ public class BestcutApiController {
         @ApiResponse(description = "존재하지 않는 멤버", responseCode = "404"),
     })
     public ResponseEntity bescutReport(@PathVariable Long bestcutId,
-        @RequestBody Map<String, String> reportType, Authentication authentication) {
+        @RequestBody Map<String, String> reportType,
+        @AuthenticationPrincipal MemberDetail memberDetail) {
 
-        Long memberId = ((MemberAccessRes) authentication.getPrincipal()).getId();
-        bestcutService.reportBestcut(memberId, bestcutId,
+        bestcutService.reportBestcut(memberDetail.getId(), bestcutId,
             ReportType.valueOf(reportType.get("reportType")));
 
         return ResponseEntity.ok().build();
@@ -118,14 +113,16 @@ public class BestcutApiController {
     @ApiResponses({
         @ApiResponse(description = "베스트컷 조회 성공", responseCode = "200")
     })
-    public ResponseEntity<PageImpl<BestcutRes>> bestcutList(Authentication authentication,
+    public ResponseEntity<PageImpl<BestcutRes>> bestcutList(
+        @AuthenticationPrincipal MemberDetail memberDetail,
         @ModelAttribute PageConditionReq pageConditionReq) {
         Long memberId = 0L;
-        if (authentication != null) {
-            memberId = ((MemberAccessRes) authentication.getPrincipal()).getId();
+        if (memberDetail != null) {
+            memberId = memberDetail.getId();
         }
 
-        PageImpl<BestcutRes> result = bestcutService.findAllBestcuts(false, memberId, pageConditionReq);
+        PageImpl<BestcutRes> result = bestcutService.findAllBestcuts(false, memberId,
+            pageConditionReq);
 
         return ResponseEntity.ok(result);
     }
@@ -136,10 +133,10 @@ public class BestcutApiController {
         @ApiResponse(description = "베스트컷 조회 성공", responseCode = "200"),
         @ApiResponse(description = "존재하지 않는 베스트컷", responseCode = "404")
     })
-    public ResponseEntity<BestcutRes> bestcutFind(Authentication authentication,
+    public ResponseEntity<BestcutRes> bestcutFind(
+        @AuthenticationPrincipal MemberDetail memberDetail,
         @PathVariable Long bestcutId) {
-        Long memberId = ((MemberAccessRes) authentication.getPrincipal()).getId();
-        BestcutRes findBestcut = bestcutService.findBestcut(memberId, bestcutId);
+        BestcutRes findBestcut = bestcutService.findBestcut(memberDetail.getId(), bestcutId);
 
         return ResponseEntity.ok(findBestcut);
     }

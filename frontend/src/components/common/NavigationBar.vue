@@ -1,17 +1,24 @@
 <template>
   <div id="navbar" :class="view">
     <span class="left">
-      <router-link to="/">똑딱</router-link>
+      <router-link class="b" to="/">똑딱</router-link>
     </span>
     <span class="mid">
-      <router-link to="/gameList">게임 목록</router-link>
-      <router-link to="/gameMake">게임 만들기</router-link>
-      <router-link to="/bestcut">베스트 컷</router-link>
+      <router-link class="b" to="/single-games">혼자 하기</router-link>
+      <router-link class="b" to="/multi-games">같이 하기</router-link>
+      <router-link v-if="accessToken" class="b" to="/gameMake"
+        >게임 만들기</router-link
+      >
+      <router-link class="b" to="/bestcut">베스트 컷</router-link>
     </span>
     <span class="right">
-      <a v-if="!accessToken" @click="setCurrentModalAsync(`login`)">로그인</a>
-      <router-link v-if="accessToken" to="/member">마이 페이지</router-link>
-      <a v-if="accessToken" @click="logout">로그아웃</a>
+      <a v-if="!accessToken" class="b" @click="setCurrentModalAsync(`login`)"
+        >로그인</a
+      >
+      <router-link class="b" v-if="accessToken" to="/member"
+        >마이 페이지</router-link
+      >
+      <a class="b" v-if="accessToken" @click="logout">로그아웃</a>
       <router-link v-if="isAdmin" to="/admin">관리자 페이지</router-link>
     </span>
   </div>
@@ -45,8 +52,7 @@ const logout = () => {
         "access-token": accessToken.value, // 변수로 가지고있는 AccessToken
       },
     })
-    .then((response) => {
-      console.log(response);
+    .then(() => {
       window.location.assign(`/`);
     })
     .catch((error) => {
@@ -88,7 +94,7 @@ const logout = () => {
 .variant3 span {
   color: white;
 }
-a {
+.b {
   text-decoration: none;
   line-height: 95px;
   margin: 40px;
@@ -106,6 +112,10 @@ span:hover {
   font-size: 24px;
   font-family: "NanumSquareRoundEB";
 }
+.mid span {
+  font-size: 24px;
+  font-family: "NanumSquareRoundEB";
+}
 .right a {
   font-size: 24px;
   font-family: "NanumSquareRoundEB";
@@ -113,6 +123,11 @@ span:hover {
 .right span {
   font-size: 24px;
   font-family: "NanumSquareRoundEB";
+}
+.c span {
+  font-size: 18px;
+  font-family: "NanumSquareRoundEB";
+  color: black;
 }
 
 .left {
@@ -124,9 +139,15 @@ span:hover {
   position: absolute;
   left: 50%;
   transform: translate(-50%, 0);
+  z-index: 1;
 }
 
 .right {
   float: right;
 }
+
+/* #content:hover {
+  box-shadow: 0 0 20px #8b8b8b;
+  transition: 0.3s;
+} */
 </style>

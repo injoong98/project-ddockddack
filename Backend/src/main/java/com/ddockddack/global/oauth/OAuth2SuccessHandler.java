@@ -35,10 +35,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         Member member = memberRepository.getByEmail((String) attributes.get("email"));
 
-        System.out.println((String) attributes.get("email"));
-        System.out.println(member);
-        log.info("email {} ", (String) attributes.get("email"));
-        log.info("email {} ", (String) attributes.get("nickname"));
         if (member == null) {
             member = Member.builder()
                 .email((String) attributes.get("email"))
@@ -48,10 +44,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .build();
             memberRepository.save(member);
         }
-        log.info("Member Id {} {}", member.getId(), member.getEmail());
 
         Token token = tokenService.generateToken(member.getId(), "USER");
-        log.info("JwT : {}", token);
 
         Cookie cookie = new Cookie("refresh-token", token.getRefreshToken());
         // expires in 7 days

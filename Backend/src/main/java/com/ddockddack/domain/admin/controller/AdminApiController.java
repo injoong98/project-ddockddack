@@ -2,13 +2,12 @@ package com.ddockddack.domain.admin.controller;
 
 import com.ddockddack.domain.bestcut.response.ReportedBestcutRes;
 import com.ddockddack.domain.bestcut.service.BestcutService;
-import com.ddockddack.domain.game.response.ReportedGameRes;
-import com.ddockddack.domain.game.service.GameService;
-import com.ddockddack.domain.member.response.MemberAccessRes;
+import com.ddockddack.domain.multigame.response.ReportedGameRes;
+import com.ddockddack.domain.multigame.service.MultiGameService;
 import com.ddockddack.domain.member.service.BanLevel;
 import com.ddockddack.domain.member.service.MemberService;
 import com.ddockddack.domain.report.service.ReportService;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.ddockddack.global.oauth.MemberDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -17,7 +16,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,11 +30,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/admin")
+@RequestMapping("/admin")
 public class AdminApiController {
 
     private final BestcutService bestcutService;
-    private final GameService gameService;
+    private final MultiGameService multiGameService;
     private final MemberService memberService;
     private final ReportService reportService;
 
@@ -52,7 +51,7 @@ public class AdminApiController {
     })
     public ResponseEntity<List<ReportedGameRes>> reportedGameList() {
 
-        return ResponseEntity.ok(gameService.findAllReportedGames());
+        return ResponseEntity.ok(multiGameService.findAllReportedGames());
     }
 
     @GetMapping("/reported/bestcuts")
@@ -80,11 +79,9 @@ public class AdminApiController {
     public ResponseEntity reportedGameRemove(@PathVariable Long gameId,
         @RequestHeader(value = "banMemberId", required = true) Long banMemberId,
         @RequestHeader(value = "banLevel", required = true) String banLevel,
-        Authentication authentication) {
+        @AuthenticationPrincipal MemberDetail memberDetail) {
 
-        Long adminId = ((MemberAccessRes) authentication.getPrincipal()).getId();
-
-        gameService.removeGame(adminId, gameId);
+        multiGameService.removeGame(memberDetail, gameId);
         if (stringToEnum(banLevel) != BanLevel.NO_PENALTY) {
             memberService.banMember(banMemberId, stringToEnum(banLevel));
         }
@@ -122,10 +119,9 @@ public class AdminApiController {
     public ResponseEntity bestcutRemove(@PathVariable Long bestcutId,
         @RequestHeader(value = "banMemberId", required = true) Long banMemberId,
         @RequestHeader(value = "banLevel", required = true) String banLevel,
-        Authentication authentication) {
-        Long adminId = ((MemberAccessRes) authentication.getPrincipal()).getId();
+        @AuthenticationPrincipal MemberDetail memberDetail) {
 
-        bestcutService.removeBestcut(bestcutId, adminId);
+        bestcutService.removeBestcut(bestcutId, memberDetail);
         if (stringToEnum(banLevel) != BanLevel.NO_PENALTY) {
             memberService.banMember(banMemberId, stringToEnum(banLevel));
         }

@@ -71,7 +71,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, onMounted, ref, computed } from "vue";
+import { defineProps, defineEmits, ref, computed } from "vue";
 import { useStore } from "vuex";
 import { apiInstance } from "@/api/index";
 import router from "@/router/index.js";
@@ -101,25 +101,28 @@ const setCurrentModalAsync = (what) => {
     data: props.game,
   });
 };
-onMounted(() => {
-  // console.log(process.env);
-});
 
 const createSession = (gameId) => {
   api
     .post(
       "/api/game-rooms",
-      {
-        gameId,
-      },
+      {},
       {
         headers: {
           "access-token": accessToken,
+        },
+        params: {
+          gameId,
         },
       }
     )
     .then((res) => {
       router.replace(`/gameroom/${res.data}`);
+    })
+    .catch((err) => {
+      if (err.response.status === 500) {
+        alert("방 생성에 실패 했습니다.");
+      }
     });
 };
 
@@ -127,7 +130,7 @@ const starredGame = () => {
   open();
   api
     .post(
-      `/api/games/starred/${props.game.gameId}`,
+      `/api/multi-games/starred/${props.game.gameId}`,
       {},
       { headers: { "access-token": accessToken } }
     )
@@ -142,7 +145,7 @@ const starredGame = () => {
 const unstarredGame = () => {
   open();
   api
-    .delete(`/api/games/unstarred/${props.game.gameId}`, {
+    .delete(`/api/multi-games/unstarred/${props.game.gameId}`, {
       headers: { "access-token": accessToken },
     })
     .then(() => {

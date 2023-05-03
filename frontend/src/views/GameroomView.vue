@@ -1,6 +1,5 @@
 <template>
   <div id="session">
-    <modal-frame v-if="currentModal.length !== 0" />
     <div id="session-header">
       <span id="session-title">
         {{ room.gameTitle }} [방 코드 - {{ room.pinNumber }}]
@@ -171,12 +170,10 @@ import CaptureVideo from "@/components/Gameroom/item/CaptureVideo.vue";
 import { useStore } from "vuex";
 import router from "@/router/index.js";
 import process from "process";
-import ModalFrame from "@/components/common/ModalFrame";
 import html2canvas from "html2canvas";
 import captureSound from "@/assets/sounds/capture_sound.mp3";
 import backgroundSound from "@/assets/sounds/background_sound.mp3";
 
-const currentModal = computed(() => store.state.commonStore.currentModal);
 const IMAGE_PATH = process.env.VUE_APP_IMAGE_PATH;
 const api = apiInstance();
 const route = useRoute();
@@ -240,7 +237,7 @@ onBeforeMount(() => {
     })
     .then((res) => {
       openviduInfo.value.OV = new OpenVidu();
-      // openviduInfo.value.OV.enableProdMode();
+      openviduInfo.value.OV.enableProdMode();
       openviduInfo.value.session = openviduInfo.value.OV.initSession();
       // On every new Stream received...
       openviduInfo.value.session.on("streamCreated", ({ stream }) => {
@@ -329,10 +326,6 @@ onBeforeMount(() => {
         backgroundAudio.play();
       });
 
-      if (!accessToken.value) {
-        console.log(typeof res.data);
-      }
-
       openviduInfo.value.session
         .connect(res.data.token, {
           clientData: nickname.value,
@@ -366,13 +359,6 @@ onBeforeMount(() => {
           room.value.gameDescription = res.data.gameDescription;
           room.value.gameImages = res.data.gameImages;
           isHost.value = res.data.isHost;
-        })
-        .catch((error) => {
-          console.log(
-            "There was an error connecting to the session:",
-            error.code,
-            error.message
-          );
         });
       window.addEventListener("beforeunload", leaveSession);
     })
@@ -502,13 +488,18 @@ const capture = async (index) => {
         openviduInfo.value.publisher.session.connection.connectionId;
       const pinNumber = openviduInfo.value.publisher.session.sessionId;
       myImg = canvas.toDataURL("image/jpeg");
-      let byteString = myImg.replace("data:image/jpeg;base64,", "");
+      let blob = dataURItoBlob(myImg);
+      let fd = new FormData();
+      fd.append("socketId", socketId);
+      fd.append("pinNumber", pinNumber);
+      fd.append("memberGameImage", new File([blob], "img.jpeg"));
+      fd.append("gameImage", room.value.gameImages[index].gameImage);
 
-      let param = {
-        gameImage: room.value.gameImages[index].gameImage,
-        memberGameImage: byteString,
-      };
-      api.post(`/api/game-rooms/${pinNumber}/${socketId}/images`, param);
+      api.post(`/api/game-rooms/score`, fd, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       resultImages.value.push(myImg);
     })
     .catch((err) => {
@@ -554,6 +545,19 @@ const backgroundSoundOff = () => {
 const captureSoundOff = () => {
   captureAudio.pause();
   captureAudio.currenttime = 0;
+};
+
+const dataURItoBlob = (dataURI) => {
+  let byteString = window.atob(dataURI.split(",")[1]);
+  let mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
+  let ab = new ArrayBuffer(byteString.length);
+  let ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+
+  let bb = new Blob([ab], { type: mimeString });
+  return bb;
 };
 
 // setCurrentModalAsync("intermediateResult"); //체크

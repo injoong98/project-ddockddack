@@ -26,9 +26,8 @@ const api = apiInstance();
 const game = ref();
 
 api
-  .get(`/api/games/${props.gameId}`)
+  .get(`/api/multi-games/${props.gameId}`)
   .then((response) => {
-    console.log(response.data);
     game.value = response.data;
   })
   .catch((error) => {

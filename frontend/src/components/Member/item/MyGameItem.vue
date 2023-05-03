@@ -51,18 +51,8 @@
           />
         </div>
         <div id="etc" v-show="state">
-          <div v-if="props.game.isStarred === 0" @click="starredGame">
-            <span>즐겨찾기</span>
-          </div>
-          <div v-if="props.game.isStarred === 1" @click="unstarredGame">
-            <span>즐겨찾기 해제</span>
-          </div>
-          <!-- <div><span>베스트 컷</span></div> -->
           <div @click="setCurrentModalAsync(`preview`)">
             <span>문제 미리보기</span>
-          </div>
-          <div @click="setCurrentModalAsync(`reportReason`)">
-            <span>신고</span>
           </div>
           <div @click="deleteGame">
             <span>삭제</span>
@@ -74,7 +64,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, onMounted, ref, computed } from "vue";
+import { defineProps, defineEmits, ref, computed } from "vue";
 import { useStore } from "vuex";
 import { apiInstance } from "@/api/index";
 import router from "@/router/index.js";
@@ -103,63 +93,35 @@ const setCurrentModalAsync = (what) => {
     data: props.game,
   });
 };
-onMounted(() => {
-  // console.log(process.env);
-});
 
 const createSession = (gameId) => {
   api
     .post(
       "/api/game-rooms",
-      {
-        gameId,
-      },
+      {},
       {
         headers: {
           "access-token": accessToken,
+        },
+        params: {
+          gameId,
         },
       }
     )
     .then((res) => {
       router.replace(`/gameroom/${res.data}`);
-    });
-};
-
-const starredGame = () => {
-  open();
-  api
-    .post(
-      `/api/games/starred/${props.game.gameId}`,
-      {},
-      { headers: { "access-token": accessToken } }
-    )
-    .then(() => {
-      emit("updateProps", { status: "starred", index: props.index });
     })
-    .catch((error) => {
-      error;
-      alert("로그인이 필요한 기능입니다.");
-    });
-};
-const unstarredGame = () => {
-  open();
-  api
-    .delete(`/api/games/unstarred/${props.game.gameId}`, {
-      headers: { "access-token": accessToken },
-    })
-    .then(() => {
-      emit("updateProps", { status: "unstarred", index: props.index });
-    })
-    .catch((error) => {
-      error;
-      alert("로그인이 필요한 기능입니다.");
+    .catch((err) => {
+      if (err.response.status === 500) {
+        alert("방 생성에 실패 했습니다.");
+      }
     });
 };
 const deleteGame = () => {
   const result = confirm("삭제 하시겠습니까?");
   if (result) {
     api
-      .delete(`/api/games/${props.game.gameId}`, {
+      .delete(`/api/multi-games/${props.game.gameId}`, {
         headers: { "access-token": accessToken },
       })
       .then(() => {

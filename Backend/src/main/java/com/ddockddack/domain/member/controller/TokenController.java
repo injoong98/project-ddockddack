@@ -1,10 +1,10 @@
 package com.ddockddack.domain.member.controller;
 
 import com.ddockddack.domain.member.repository.MemberRepository;
-import com.ddockddack.domain.member.response.MemberAccessRes;
 import com.ddockddack.domain.member.service.TokenService;
 import com.ddockddack.global.error.ErrorCode;
 import com.ddockddack.global.error.exception.AccessDeniedException;
+import com.ddockddack.global.oauth.MemberDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Slf4j
 @RestController
-@RequestMapping("/api/token")
+@RequestMapping("/token")
 public class TokenController {
 
     private final MemberRepository memberRepository;
@@ -41,13 +41,11 @@ public class TokenController {
     })
     @GetMapping("/refresh")
     public String refreshAuth(HttpServletResponse response) {
-        log.info("refresh 진입");
         try {
-            MemberAccessRes memberAccessRes = (MemberAccessRes) SecurityContextHolder.getContext()
+            MemberDetail memberDetail = (MemberDetail) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
-            response.addHeader("access-token", memberAccessRes.getAccessToken());
-            log.info(memberAccessRes.getAccessToken());
-            return memberAccessRes.getAccessToken();
+            response.addHeader("access-token", memberDetail.getAccessToken());
+            return memberDetail.getAccessToken();
         } catch (Exception e) {
             throw new AccessDeniedException(ErrorCode.NOT_AUTHORIZED);
         }

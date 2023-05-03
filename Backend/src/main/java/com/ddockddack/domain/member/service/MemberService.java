@@ -1,11 +1,9 @@
 package com.ddockddack.domain.member.service;
 
 import com.ddockddack.domain.bestcut.service.BestcutService;
-import com.ddockddack.domain.game.repository.GameImageRepository;
-import com.ddockddack.domain.game.repository.GameRepository;
-import com.ddockddack.domain.game.repository.StarredGameRepository;
-import com.ddockddack.domain.gameRoom.repository.GameRoomHistoryRepository;
-import com.ddockddack.domain.gameRoom.repository.GameRoomHistoryRepositorySupport;
+import com.ddockddack.domain.multigame.repository.GameImageRepository;
+import com.ddockddack.domain.multigame.repository.MultiGameRepository;
+import com.ddockddack.domain.multigame.repository.StarredGameRepository;
 import com.ddockddack.domain.member.entity.Member;
 import com.ddockddack.domain.member.entity.Role;
 import com.ddockddack.domain.member.repository.MemberRepository;
@@ -18,7 +16,6 @@ import com.ddockddack.global.error.exception.ImageExtensionException;
 import com.ddockddack.global.error.exception.NotFoundException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
@@ -40,8 +37,7 @@ public class MemberService {
     private final ReportedGameRepository reportedGameRepository;
     private final GameImageRepository gameImageRepository;
     private final StarredGameRepository starredGameRepository;
-    private final GameRepository gameRepository;
-    private final GameRoomHistoryRepository gameRoomHistoryRepository;
+    private final MultiGameRepository multiGameRepository;
     private final AwsS3 awsS3;
 
 
@@ -51,8 +47,7 @@ public class MemberService {
     @Transactional
     public void modifyMemberNickname(Long memberId, MemberModifyNameReq modifyMemberNickname) {
         Member member = memberRepository.findById(memberId).get();
-        log.info("log! {}, {}", modifyMemberNickname.getNickname(),
-            modifyMemberNickname.getNickname().isEmpty());
+        modifyMemberNickname.getNickname().isEmpty();
         if (!member.getNickname().equals(modifyMemberNickname.getNickname())) {
             member.modifyNickname(modifyMemberNickname.getNickname());
         }
@@ -71,8 +66,6 @@ public class MemberService {
                 (modifyProfileImg.getContentType().contains("image/png"))))) {
             throw new ImageExtensionException(ErrorCode.EXTENSION_NOT_ALLOWED);
         }
-
-        log.info("modifyProfileImg contentType {}", modifyProfileImg.getContentType());
 
         try {
             String fileName = awsS3.multipartFileUpload(modifyProfileImg);
@@ -106,21 +99,13 @@ public class MemberService {
         bestcutService.removeBestcutByMemberId(memberId);
         bestcutService.removeAllBestcutByIds(bestcutIds);
 
-        List<Long> gameIds = gameRepository.findGameIdsByMemberId(memberId);
+        List<Long> gameIds = multiGameRepository.findGameIdsByMemberId(memberId);
         gameImageRepository.deleteAllByGameId(gameIds);
         starredGameRepository.deleteByMemberId(memberId);
         starredGameRepository.deleteAllByGameId(gameIds);
         reportedGameRepository.deleteByMemberId(memberId);
         reportedGameRepository.deleteAllByGameId(gameIds);
-        gameRepository.deleteAllByGameId(gameIds);
-
-        List<Long> gameRoomHistoryIds = gameRoomHistoryRepository.findAllGameRoomHistoryIdByMemberId(
-            memberId);
-
-        log.info(gameRoomHistoryIds.toString());
-
-        gameRoomHistoryRepository.deleteAllByGameId(gameRoomHistoryIds);
-
+        multiGameRepository.deleteAllByGameId(gameIds);
         memberRepository.deleteById(memberId);
     }
 
