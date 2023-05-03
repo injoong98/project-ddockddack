@@ -209,14 +209,21 @@ const analysis = async () => {
         rank.value.length < 20 ||
         rank.value[rank.value.length - 1].score < per.value
       ) {
-        store.dispatch("commonStore/setCurrentModalAsync", {
-          name: "rankingRegist",
-          data: {
-            gameId: games.value[targetGameIdx.value].id,
-            image: fd.get("source"),
-            score: per.value,
-          },
-        });
+        const reader = new FileReader();
+        reader.onload = () => {
+          store.dispatch("commonStore/setCurrentModalAsync", {
+            name: "rankingRegist",
+            data: {
+              gameId: games.value[targetGameIdx.value].id,
+              targetImage: games.value[targetGameIdx.value].thumbnail,
+              image: fd.get("source"),
+              userImage: reader.result,
+              gameTitle: games.value[targetGameIdx.value].title,
+              score: per.value,
+            },
+          });
+        };
+        reader.readAsDataURL(file);
       }
     })
     .catch((err) => {
