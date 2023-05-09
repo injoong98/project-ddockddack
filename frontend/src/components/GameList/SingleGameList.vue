@@ -163,7 +163,7 @@ const callApi = () => {
     .get(`/api/single-games`, {
       params: {
         keyword: pageConditionReq.value.keyword,
-        page: pageConditionReq.value.page - 1,
+        page: pageConditionReq.value.page,
       },
       headers: { "access-token": accessToken },
     })
@@ -179,6 +179,7 @@ const callApi = () => {
 const analysis = async () => {
   let fd = new FormData();
   fd.append("target", games.value[targetGameIdx.value].thumbnail);
+  fd.append("singleGameId", games.value[targetGameIdx.value].id);
   let file = await getFile(mode.value);
 
   fd.append("source", file);

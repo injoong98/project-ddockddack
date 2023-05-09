@@ -8,11 +8,14 @@ import javax.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@DynamicInsert
 public class SingleGame {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "single_game_id")
@@ -23,4 +26,11 @@ public class SingleGame {
 
     @Column(length = 300, nullable = false)
     private String thumbnail;
+
+    @Column(columnDefinition = "INT default 0")
+    private int playCount;
+
+    public void increasePlayCount() {
+        this.playCount++;
+    }
 }

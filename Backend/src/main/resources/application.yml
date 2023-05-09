@@ -44,13 +44,6 @@ logging:
 #    org.hibernate.type: trace
     org:
       springframework: INFO
-  pattern:
-    file: "[%d{HH:mm:ss.SSS}][%-5level][%logger.%method:line%line] - %msg%n"
-  file:
-    path: logs
-  logback:
-    rollingpolicy:
-      file-name-pattern: Log-%d{yyyy-MM-dd}.%i.log
 
 management:
   endpoints:
