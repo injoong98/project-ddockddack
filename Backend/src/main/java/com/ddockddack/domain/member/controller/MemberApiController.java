@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONUtil;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -179,8 +180,7 @@ public class MemberApiController {
         @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @GetMapping("/logout")
-    public ResponseEntity
-    logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity logout(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = removeCookie(request.getCookies(), response);
         memberService.logout(refreshToken);
         return ResponseEntity.ok().build();

@@ -7,7 +7,8 @@ import com.ddockddack.global.error.ErrorCode;
 import com.ddockddack.global.error.exception.AccessDeniedException;
 import com.ddockddack.global.error.exception.NotFoundException;
 import com.ddockddack.global.oauth.MemberDetail;
-import com.ddockddack.global.oauth.Token;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import java.io.IOException;
 import java.util.Arrays;
 import javax.servlet.FilterChain;
@@ -36,83 +37,53 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         throws IOException, ServletException {
 
         String accessToken = (request).getHeader("access-token");
-        String refreshToken = null;
+        String refreshToken = getRefreshToken(request.getCookies());
+        // refresh 요청
 
-        Cookie[] cookies = request.getCookies();
-//        log.info("cokies {}", cookies);
+        // 액세스 토큰이 존재 하는 경우
+        if (accessToken != null && !accessToken.isBlank()) {
+            try {
+                // 토큰 검증
+                if (request.getRequestURI()
+                    .contains("refresh") || !tokenService.verifyToken(accessToken)) {
+                    // 리프레시 토큰 검증
+                    tokenService.verifyToken(refreshToken);
+                    // 리프레시 토큰이 존재하지 않거나 변조된 경우
+                    tokenService.refreshTokenValidate(refreshToken);
 
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("refresh-token")) {
-                    logger.info(cookie.getValue());
-                    refreshToken = cookie.getValue();
-                    break;
+                    // 리프레시 토큰이 유효한 경우 액세스 토큰 재발급
+                    accessToken = tokenService.generateToken(
+                        tokenService.getUid(refreshToken), "USER");
                 }
+            } catch (ExpiredJwtException e) {
+                request.setAttribute("exception", ErrorCode.EXPIRED_ACCESSTOKEN);
+            } catch (SignatureException e) {
+                request.setAttribute("exception", ErrorCode.INVALID_TOKEN);
             }
+            // 유효한 토큰의 경우 정상 진행
+            setAuthentication(accessToken);
         }
+        //  로그인이 필요한 요청의 경우
+        if (isLoginRequest(request)) {
+            try {
+                // 액세스 토큰 없고, 리프레시 토큰이 만료 된 경우
+                tokenService.verifyToken(refreshToken);
 
-//        log.info("accessToken {} ", accessToken);
-//        log.info("refreshToken {} ", refreshToken);
+                // 리프레시 토큰이 위조되었거나 , 없는 경우
+                tokenService.refreshTokenValidate(refreshToken);
 
-        //엑세스 토큰이 없을때
-        if (accessToken == null || "".equals(accessToken)) {
-
-            if (refreshToken != null && tokenService.verifyToken(refreshToken)) {
-
-                //refresh-token을 받음 access-token 재발급
-                Long id = tokenService.getUid(refreshToken);
-                Token token = tokenService.reGenerateAccessToken(id, "USER", refreshToken);
-                Member member = memberRepository.findById(id).orElseThrow(() ->
-                    new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
-
-                if (member == null) {
-                    throw new NotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+                // 리프레시 토큰이 존재하고, 검증을 통과한 경우에는 정상진행
+                if (refreshToken != null) {
+                    accessToken = tokenService.generateToken(
+                        tokenService.getUid(refreshToken), "USER");
+                    setAuthentication(accessToken);
                 }
-
-                MemberDetail memberDetail = new MemberDetail(token.getToken(),
-                    member.getId(), member.getRole());
-
-                Authentication auth = getAuthentication(memberDetail);
-                SecurityContextHolder.getContext().setAuthentication(auth);
-
-                // 정상 진행
-
-            } else if (request.getRequestURI().contains("game-rooms") || (request.getRequestURI().contains("single-games"))) {
-
-                // 정상 진행
-
-            } else if (request.getMethod().equals("GET")) {
-
-                // 정상 진행
-
-            } else {
-
-                log.info(String.valueOf(ErrorCode.EXPIRED_ACCESSTOKEN));
-                throw new AccessDeniedException(ErrorCode.EXPIRED_ACCESSTOKEN);
-
-            }
-
-        } else {
-            Long id = tokenService.getUid(accessToken);
-            Member member = memberRepository.findById(id).orElseThrow(() ->
-                new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
-
-            if (tokenService.verifyToken(accessToken)) {
-
-                if (member == null) {
-                    throw new NotFoundException(ErrorCode.MEMBER_NOT_FOUND);
-                }
-
-                MemberDetail memberAccessRes = new MemberDetail(accessToken, member.getId(),
-                    member.getRole());
-
-                Authentication auth = getAuthentication(memberAccessRes);
-                SecurityContextHolder.getContext().setAuthentication(auth);
-
-                // 정상 진행
-            } else {
-                log.info(String.valueOf(ErrorCode.EXPIRED_ACCESSTOKEN));
-                throw new AccessDeniedException(ErrorCode.EXPIRED_ACCESSTOKEN);
+            } catch (ExpiredJwtException e) {
+                request.setAttribute("exception", ErrorCode.EXPIRED_ACCESSTOKEN.getCode());
+            } catch (SignatureException e) {
+                request.setAttribute("exception", ErrorCode.INVALID_TOKEN.getCode());
+            } catch (AccessDeniedException e) {
+                request.setAttribute("exception", ErrorCode.LOGIN_REQUIRED);
             }
         }
 
@@ -120,8 +91,42 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     }
 
-    public Authentication getAuthentication(MemberDetail member) {
+
+    private void setAuthentication(String accessToken) {
+        Long id = tokenService.getUid(accessToken);
+        Member member = memberRepository.findById(id).orElseThrow(() ->
+            new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+
+        MemberDetail memberAccessRes = new MemberDetail(accessToken, member.getId(),
+            member.getRole());
+
+        Authentication auth = getAuthentication(memberAccessRes);
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+    }
+
+    private Authentication getAuthentication(MemberDetail member) {
         return new UsernamePasswordAuthenticationToken(member, "",
             Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")));
+    }
+
+    private String getRefreshToken(Cookie[] cookies) {
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals("refresh-token")) {
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
+
+    private boolean isLoginRequest(HttpServletRequest request) {
+        if (request.getMethod().equals("GET")) {
+            return false;
+        }
+        if (request.getRequestURI().contains("game-rooms") || (request.getRequestURI()
+            .contains("single-games"))) {
+            return false;
+        }
+        return true;
     }
 }
