@@ -31,6 +31,9 @@ export const memberStore = {
     setMemberInfo(state, memberInfo) {
       state.memberInfo = memberInfo;
     },
+    setMemberNickname(state, name) {
+      state.memberInfo.nickname = name;
+    },
   },
   actions: {
     setTokensAsync({ commit }, accessToken) {
@@ -55,7 +58,6 @@ export const memberStore = {
         }
       );
     },
-
     async getMemberInfo({ commit, state, dispatch }) {
       let accessToken = state.accessToken;
       await findByAccessToken(
@@ -71,18 +73,20 @@ export const memberStore = {
       );
     },
 
-    async accesstokenReissue({ commit, state, store }, isAuthPage) {
+    async accesstokenReissue({ commit, state, store }, accessToken) {
       await accesstokenRegeneration(
-        ({ data }) => {
+        accessToken,
+        (data) => {
           if (data) {
-            let accessToken = data;
+            let accessToken = data.headers["access-token"];
             commit("setToken", accessToken);
           }
         },
         async (error) => {
           //AccessToken 갱신 실패시 refreshToken이 문제임 >> 다시 로그인해야함
           commit("setToken", "");
-          if (error === 401 && isAuthPage) {
+          //isAuthPage
+          if (error === 401) {
             await logout(
               state.memberInfo.id,
               ({ data }) => {
@@ -102,21 +106,25 @@ export const memberStore = {
         }
       );
     },
-  },
-
-  async memberLogout({ commit }, accessToken) {
-    await logout(
-      accessToken,
-      ({ data }) => {
-        if (data.status === 200) {
-          commit("setMemberInfo", null);
+    async memberLogout({ commit }, accessToken) {
+      await logout(
+        accessToken,
+        ({ data }) => {
+          data;
+          // if (data.status === 200) {
+          //   console.log("200확인");
+          // }
+        },
+        (error) => {
+          console.log(error);
         }
-      },
-      (error) => {
-        commit("setToken", "");
-        console.log(error);
-      }
-    );
+      );
+      commit("setMemberInfo", "");
+      commit("setToken", "");
+    },
+    async nicknameModify({ commit }, name) {
+      commit("setMemberNickname", name);
+    },
   },
 
   // withdrawal = () => {
