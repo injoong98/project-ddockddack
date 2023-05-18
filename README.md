@@ -6,8 +6,8 @@
 
 ## 개요
 
-친구들끼리 사람 혹은 사물을 보며 서로 자기가 더 닮았다고 설전을 펼치신 적 있으신가요?<br>
-더 이상 그럴 필요 없습니다. '똑딱'이 4가지 이미지 분석 알고리즘을 이용해 누가 더 닮았는지 알려드리겠습니다.
+'똑딱'은 이미지 유사도 평가 기반의 캐주얼 웹게임입니다. <br>
+타겟 이미지와 얼마나 닮았는지 겨루어 보세요! 친구들과 함께, 또는 혼자서도 즐길 수 있습니다.
 
 ## 목차
 
@@ -18,18 +18,18 @@
 5. [협업툴](#협업툴)
 6. [기능 명세서](#기능-명세서)
 7. [API 명세서](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409/-/blob/develop/README.md#api-%EB%AA%85%EC%84%B8%EC%84%9C)
-8. [화면 설계서](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409/-/blob/develop/README.md#%ED%99%94%EB%A9%B4-%EC%84%A4%EA%B3%84%EC%84%9C)
-9. [ER Diagram](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409/-/blob/develop/README.md#er-diagram)
-10. [컨벤션 전략](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409/-/blob/develop/README.md#%EC%BB%A8%EB%B2%A4%EC%85%98-%EC%A0%84%EB%9E%B5)
-11. [EC2 포트 정리](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409/-/blob/develop/README.md#ec2-%ED%8F%AC%ED%8A%B8-%EC%A0%95%EB%A6%AC)
-12. [팀 역할](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409#%ED%8C%80%EC%9B%90-%EC%97%AD%ED%95%A0)
+8. [ER Diagram](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409/-/blob/develop/README.md#er-diagram)
+9. [컨벤션 전략](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409/-/blob/develop/README.md#%EC%BB%A8%EB%B2%A4%EC%85%98-%EC%A0%84%EB%9E%B5)
+10. [EC2 포트 정리](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409/-/blob/develop/README.md#ec2-%ED%8F%AC%ED%8A%B8-%EC%A0%95%EB%A6%AC)
+11. [팀 역할](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409#%ED%8C%80%EC%9B%90-%EC%97%AD%ED%95%A0)
 
 ## 주요 기능
 
 - webRTC를 이용한 실시간 화상 게임
-- 사용자가 직접 커스터마이징 가능한 문제
-- 게임 과정에서 찍힌 사진을 확인, 공유 가능
-- 게임 기록 보관, 확인
+- 싱글 게임 모드와 멀티 게임 모드 지원
+- 고득점 달성 시 랭킹 등록 가능한 싱글모드 게임
+- 사용자가 직접 커스터마이징 가능한 멀티모드 게임
+- 게임을 즐기며 찍은 사진을 게시 및 공유 가능
 
 ## 기능 시연
 
@@ -45,23 +45,23 @@
 
 ![Main_1](/ReadMe_contents/Main_3.gif)<br/><br/><br/><br/>
 
-- #### 게임 목록 - 정렬 및 검색
+- #### 같이 하기 - 정렬 및 검색
 
 ![GameList_1](/ReadMe_contents/GameList_1.gif)<br/><br/><br/><br/>
 
-- #### 게임 목록 - 방 생성
+- #### 같이 하기 - 방 생성
 
 ![GameList_2](/ReadMe_contents/GameList_2.gif)<br/><br/><br/><br/>
 
-- #### 게임 목록 - 즐겨찾기
+- #### 같이 하기 - 즐겨찾기
 
 ![GameList_4](/ReadMe_contents/GameList_4.gif)<br/><br/><br/><br/>
 
-- #### 게임 목록 - 문제 미리보기
+- #### 같이 하기 - 문제 미리보기
 
 ![GameList_5](/ReadMe_contents/GameList_5.gif)<br/><br/><br/><br/>
 
-- #### 게임 목록 - 신고하기
+- #### 같이 하기 - 신고하기
 
 ![GameList_6](/ReadMe_contents/GameList_6.gif)<br/><br/><br/><br/>
 
@@ -81,21 +81,13 @@
 
 ![BestcutList_3](/ReadMe_contents/BestcutList_3.gif)<br/><br/><br/><br/>
 
-- #### 마이페이지 - 프로필 사진 및 닉네임 수정
+- #### 마이페이지 - 프로필 사진 및 닉네임 수정, 나의 베스트 컷, 게임 즐겨찾기, 내가 만든 게임
 
 ![MyPage_1](/ReadMe_contents/MyPage_1.gif)<br/><br/><br/><br/>
 
-- #### 마이페이지 - 나의 베스트 컷, 게임 즐겨찾기, 내가 만든 게임, 최근 플레이 확인
-
-![MyPage_2](/ReadMe_contents/MyPage_2.gif)<br/><br/><br/><br/>
-
-- #### 관리자페이지 - 신고된 게임, 베스트 컷 목록 조회 및 처리 
+- #### 관리자페이지 - 신고된 게임, 베스트 컷 목록 조회 및 처리
 
 ![AdminPage_1](/ReadMe_contents/AdminPage_1.gif)<br/><br/><br/><br/>
-
-- #### 게임방 - 카카오톡 공유하기
-
-![GameRoom_1](/ReadMe_contents/GameRoom_1.gif)<br/><br/><br/><br/>
 
 - #### 게임방 - 게임 진행 화면
 
@@ -113,10 +105,25 @@
 
 ![GameRoom_5](/ReadMe_contents/GameRoom_5.gif)<br/><br/><br/><br/>
 
+- #### 혼자 하기 - 탐색
+
+  ![SingleGame_1](/ReadMe_contents/SingleGame_1.gif)<br/><br/><br/><br/>
+
+- #### 혼자 하기 - 게임 입장
+
+  ![SingleGame_2](/ReadMe_contents/SingleGame_2.gif)<br/><br/><br/><br/>
+
+- #### 혼자 하기 - 게임 진행 및 결과 등록
+
+  ![SingleGame_3](/ReadMe_contents/SingleGame_3.gif)<br/><br/><br/><br/>
+
+- #### 혼자 하기 - 랭킹 및 사진 확인
+  ![SingleGame_4](/ReadMe_contents/SingleGame_4.gif)<br/><br/><br/><br/>
+
 ## 개발 환경
 
 | Category        | Tech stack         | Version                    | Docker                |
-| --------------- | ------------------ | -------------------------- | --------------------- |
+|-----------------|--------------------| -------------------------- | --------------------- |
 | Version Control | GitLab             |                            |                       |
 |                 | Jira               |                            |                       |
 | Documentation   | notion             |                            |                       |
@@ -132,20 +139,27 @@
 |                 | SpringBoot         | 2.7.7                      |                       |
 |                 | Intellij           | 2022.3                     |                       |
 | DB              | MySQL              | 8.0.31                     | official docker image |
+|                 | Redis              | 6.2.5                      | official docker image |
 | Server          | AWS EC2            |                            |                       |
 |                 | AWS S3             |                            |                       |
+|                 | AWS Lambda         |                            |                       |
+|                 | AWS API Gateway    |                            |                       |
+|                 | AWS CloudFront     |                            |                       |
+|                 | Amazon Rekognition |                            |                       |
 |                 | Nginx              |                            | official docker image |
 |                 | Ubuntu             | 22.04.1 LTS                | official docker image |
 |                 | Openvidu           | 2.25.0                     | official docker image |
 | CI/CD           | Docker             |                            |                       |
 |                 | Jenkins            |                            |                       |
 |                 | Ansible            |                            |                       |
+| Monitoring      | Grafana            |                            |                       |
+|                 | Prometheus         |                            |                       |
 
 ---
 
 ## 서비스 아키텍쳐
 
-![서비스 아키텍처](./ReadMe_contents/Architecture.jpg)
+![서비스 아키텍처](./ReadMe_contents/Architecture.png)
 
 ## Jenkins를 이용한 CD 구축
 
@@ -158,15 +172,18 @@ letsencrypt를 이용하여 ssl 인증서를 적용하였고, 프론트엔드는
 
 ## 이미지 분석 알고리즘
 
-- [KAZE feature detection and description](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409/-/wikis/%EC%9D%B4%EB%AF%B8%EC%A7%80-%EC%9C%A0%EC%82%AC%EB%8F%84-/-KAZE-feature-detection-and-description)
+- [KAZE feature detection and description](./exec/outside-service/[Image]KAZEfeature.md)
   - 방향 성분으로 부분 영상의 특징을 실수 정보로 저장합니다.부분영상을 추출하여 Gradient 방향 성분에 대한 히스토그램을 추출, 각각의 작은 구역에서 방향 히스토그램을 계산합니다. 두 이미지가 동일한 KAZE Interest Point 를 많이 가지고 있을수록 높은 유사도를 갖는다고 판단, 높은 점수를 부여합니다.
-- [Structural Similarity Index Measure](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409/-/wikis/%EC%9D%B4%EB%AF%B8%EC%A7%80-%EC%9C%A0%EC%82%AC%EB%8F%84-/-Structural-Similarity-Index-Measure)
+- [Structural Similarity Index Measure](./exec/outside-service/[Image]SSIM.md)
   - 휘도(Luminance), 대비(Contrast), 구조(Structure) 를 종합적으로 평가합니다. 단순 픽셀간 비교가 아니라, 영상을 구성하는 주요 요소(휘도, 대비, 구조)를 비교합니다.
-- [Image Histogram Analysis](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409/-/wikis/%EC%9D%B4%EB%AF%B8%EC%A7%80-%EC%9C%A0%EC%82%AC%EB%8F%84-/-Image-Histogram-Analysis)
+- [Image Histogram Analysis](./exec/outside-service/[Image]histogram.md)
   - 이미지 히스토그램 분석은 이미지를 3개의 채널(Red,Green,Blue)로 분할하여 각 성분의 세기(Intensity)의 빈도(frequency)와 분포(distribution)를 측정합니다.
-- [Perceptual Hashing](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409/-/wikis/%EC%9D%B4%EB%AF%B8%EC%A7%80-%EC%9C%A0%EC%82%AC%EB%8F%84-/-Perceptual-Hashing)
+- [Perceptual Hashing](./exec/outside-service/[Image]perceptualHash.md)
   - 4를 factor 로 하여 타겟 이미지를 32×32 이미지로 scale down 합니다. 타겟 이미지에 이산 코사인 변환(Discrete cosine transform)을 행별로 수행 후, 열별로 수행합니다.
   - 높은 빈도로 등장하는 픽셀(high-frequencies pixels)은 좌측 상단 모서리에 위치하게 됩니다. 다음으로, 전체 이미지의 회색 중앙값(grayscaled median)을 계산합니다. 중앙값을 기준으로 바이너리 해싱을 수행해 결과를 반환합니다.
+- [GrabCut](./exec/outside-service/[Image]grabcut.md)
+  - 그래프 알고리즘에서 사용되는 미니멀 컷 알고리즘을 이용해서 영역을 분할합니다.
+  - 영상의 픽셀을 그래프 정점으로 간주하고, 픽셀들을 두 개의 그룹(객체 그룹, 배경 그룹)으로 분할하는 최적의 컷(Max Flow Minimum Cut)을 찾는 방식입니다.
 
 ## 협업툴
 
@@ -192,28 +209,13 @@ letsencrypt를 이용하여 ssl 인증서를 적용하였고, 프론트엔드는
 ![API 명세서_4](./ReadMe_contents/API%20Specification_4.png)
 ![API 명세서_5](./ReadMe_contents/API%20Specification_5.png)
 
-## 화면 설계서
-
-### 전체
-
-![전체 목업](./ReadMe_contents/mockup_whole.png)
-
-### 목록 목업
-
-![목록 목업](./ReadMe_contents/mockup_list.png)
-
-### 요소 목업
-
-![요소 목업_1](./ReadMe_contents/mockup_common_component_1.png)
-![요소 목업_2](./ReadMe_contents/mockup_common_component_2.png)
-
 ## ER Diagram
 
 ![ER Diagram](./ReadMe_contents/ddockddackERD.png)
 
 ## 컨벤션 전략
 
-### [상세 보기](https://lab.ssafy.com/s08-webmobile1-sub2/S08P12A409/-/wikis/%EC%BB%A8%EB%B2%A4%EC%85%98-%EC%A0%84%EB%9E%B5)
+### [상세 보기](./exec/outside-service/[MISC]convention.md)
 
 ### **Git Commit Message Convention**
 
@@ -277,4 +279,3 @@ letsencrypt를 이용하여 ssl 인증서를 적용하였고, 프론트엔드는
 |     30022     |                  vue, NginX Docker ssh port                  |
 | 40000 - 57000 | used by Kurento Media Server to establish media connections. |
 | 57001 - 65535 | used by TURN server to establish relayed media connections.  |
-
